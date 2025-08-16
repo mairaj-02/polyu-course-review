@@ -1,0 +1,370 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 animate-on-scroll">
+    <div>
+        <h1>Select a Course to Review</h1>
+        <p class="text-muted">Choose a course you've taken to share your experience</p>
+    </div>
+    <div>
+        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addCourseModal">
+            <i class="bi bi-plus-circle me-2"></i> Add New Course
+        </button>
+        <a href="{{ url_for('index') }}" class="btn btn-outline-primary">
+            <i class="bi bi-house me-2"></i> Back to Home
+        </a>
+    </div>
+</div>
+
+<!-- Search and Filter Section -->
+<div class="card search-filter-card mb-4 animate-on-scroll">
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <form action="{{ url_for('select_course_for_review') }}" method="get">
+                    <div class="input-group">
+                        <input type="text" class="form-control" name="query" placeholder="Search courses..." value="{{ query or '' }}">
+                        <button class="btn btn-primary" type="submit">Search</button>
+                    </div>
+                </form>
+            </div>
+            <div class="col-md-6">
+                <form action="{{ url_for('select_course_for_review') }}" method="get">
+                    <div class="row g-2">
+                        <div class="col-md-4">
+                            <select class="form-select" name="category">
+                                <option value="">Category</option>
+                                <option value="CAR" {% if request.args.get('category') == 'CAR' %}selected{% endif %}>CAR</option>
+                                <option value="Service Learning" {% if request.args.get('category') == 'Service Learning' %}selected{% endif %}>Service Learning</option>
+                                <option value="Leadership" {% if request.args.get('category') == 'Leadership' %}selected{% endif %}>Leadership</option>
+                                <option value="Language" {% if request.args.get('category') == 'Language' %}selected{% endif %}>Language</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <select class="form-select" name="subcategory">
+                                <option value="">Subcategory</option>
+                                <option value="A" {% if request.args.get('subcategory') == 'A' %}selected{% endif %}>A</option>
+                                <option value="M" {% if request.args.get('subcategory') == 'M' %}selected{% endif %}>M</option>
+                                <option value="N" {% if request.args.get('subcategory') == 'N' %}selected{% endif %}>N</option>
+                                <option value="D" {% if request.args.get('subcategory') == 'D' %}selected{% endif %}>D</option>
+                                <option value="English" {% if request.args.get('subcategory') == 'English' %}selected{% endif %}>English</option>
+                                <option value="Chinese" {% if request.args.get('subcategory') == 'Chinese' %}selected{% endif %}>Chinese</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <button class="btn btn-outline-secondary w-100" type="submit">Apply Filters</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if courses.items %}
+<div class="row animate-on-scroll">
+    {% for course_data in courses_with_ratings %}
+    {% set course = course_data.course %}
+    {% set avg_rating = course_data.avg_rating %}
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card course-card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">{{ course.code }}</h5>
+                <span class="badge bg-light text-dark">{{ course.category }}</span>
+            </div>
+            <div class="card-body">
+                <h6 class="card-title">{{ course.name }}</h6>
+                <p class="text-muted mb-3"><i class="bi bi-building me-2"></i> {{ course.department }}</p>
+                
+                {% if course.category == 'CAR' %}
+                <div class="mb-2">
+                    <span class="badge bg-primary me-2">{{ course.car_category }}</span>
+                    {% if course.language_requirement %}
+                    <span class="badge bg-success">{{ course.language_requirement }}</span>
+                    {% endif %}
+                </div>
+                {% elif course.category == 'Service Learning' %}
+                <div class="mb-2">
+                    <span class="badge bg-info">
+                        <i class="bi bi-geo-alt me-1"></i> {{ course.service_location or 'Various' }}
+                    </span>
+                </div>
+                {% elif course.category == 'Leadership' %}
+                <div class="mb-2">
+                    <span class="badge bg-warning text-dark">{{ course.leadership_type }}</span>
+                </div>
+                {% elif course.category == 'Language' %}
+                <div class="mb-2">
+                    <span class="badge bg-secondary">{{ course.language_type }}</span>
+                </div>
+                {% endif %}
+                
+                <div class="d-flex justify-content-between align-items-center mt-4">
+                    <div>
+                        <span class="badge bg-info">{{ course.reviews.count() }} Review(s)</span>
+                    </div>
+                    {% if course.reviews.count() > 0 %}
+                    <div>
+                        <div class="star-rating">
+                            {% for i in range(1, 6) %}
+                            {% if i <= avg_rating|round|int %}
+                            <i class="bi bi-star-fill"></i>
+                            {% else %}
+                            <i class="bi bi-star"></i>
+                            {% endif %}
+                            {% endfor %}
+                            <span class="ms-1">{{ "%.1f"|format(avg_rating) }}</span>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card-footer bg-white">
+                <a href="{{ url_for('submit_review', course_id=course.id) }}" class="btn btn-primary w-100">
+                    <i class="bi bi-pencil-square me-2"></i> Review This Course
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Pagination -->
+<nav aria-label="Page navigation" class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% if courses.has_prev %}
+        <li class="page-item">
+            <a class="page-link" href="{{ url_for('select_course_for_review', page=courses.prev_num) }}" aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+            </a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+            <a class="page-link" href="#" aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+            </a>
+        </li>
+        {% endif %}
+        
+        {% for page_num in courses.iter_pages() %}
+            {% if page_num %}
+                {% if page_num != courses.page %}
+                <li class="page-item"><a class="page-link" href="{{ url_for('select_course_for_review', page=page_num) }}">{{ page_num }}</a></li>
+                {% else %}
+                <li class="page-item active"><a class="page-link" href="#">{{ page_num }}</a></li>
+                {% endif %}
+            {% else %}
+            <li class="page-item disabled"><a class="page-link" href="#">...</a></li>
+            {% endif %}
+        {% endfor %}
+        
+        {% if courses.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="{{ url_for('select_course_for_review', page=courses.next_num) }}" aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+            </a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+            <a class="page-link" href="#" aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+            </a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% else %}
+<div class="text-center py-5 animate-on-scroll">
+    <div class="icon-circle bg-light text-primary mb-4 mx-auto">
+        <i class="bi bi-search fs-1"></i>
+    </div>
+    <h3>No courses found</h3>
+    <p class="text-muted mb-4">Try adjusting your search or filter criteria, or add a new course</p>
+    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addCourseModal">
+        <i class="bi bi-plus-circle me-2"></i> Add New Course
+    </button>
+    <a href="{{ url_for('select_course_for_review') }}" class="btn btn-outline-primary ms-2">
+        <i class="bi bi-arrow-clockwise me-2"></i> Reset Filters
+    </a>
+</div>
+{% endif %}
+
+<!-- Add Course Modal -->
+<div class="modal fade" id="addCourseModal" tabindex="-1" aria-labelledby="addCourseModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="addCourseModalLabel">Add New Course</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="add-course-form">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="code" class="form-label">Course Code</label>
+                            <input type="text" class="form-control" id="code" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="name" class="form-label">Course Name</label>
+                            <input type="text" class="form-control" id="name" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="department" class="form-label">Department</label>
+                            <input type="text" class="form-control" id="department" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="category" class="form-label">Category</label>
+                            <select class="form-select" id="category" required>
+                                <option value="">Select Category</option>
+                                <option value="CAR">Cluster Area Requirement (CAR)</option>
+                                <option value="Service Learning">Service Learning</option>
+                                <option value="Leadership">Leadership</option>
+                                <option value="Language">Language and Communication</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="subcategory" class="form-label">Subcategory</label>
+                            <input type="text" class="form-control" id="subcategory">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="language_requirement" class="form-label">Language Requirement</label>
+                            <select class="form-select" id="language_requirement">
+                                <option value="">None</option>
+                                <option value="EW/ER">English Reading/Writing</option>
+                                <option value="CW/CR">Chinese Reading/Writing</option>
+                            </select>
+                        </div>
+                        
+                        <!-- CAR specific fields -->
+                        <div class="col-md-6 car-field" style="display: none;">
+                            <label for="car_category" class="form-label">CAR Category</label>
+                            <select class="form-select" id="car_category">
+                                <option value="">Select CAR Category</option>
+                                <option value="A">A: Human Nature, relation and development</option>
+                                <option value="M">M: Chinese culture and history</option>
+                                <option value="N">N: Culture, Organization, society, and globalization</option>
+                                <option value="D">D: Science, technology and environment</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Service Learning specific fields -->
+                        <div class="col-md-6 service-learning-field" style="display: none;">
+                            <label for="service_location" class="form-label">Service Location</label>
+                            <input type="text" class="form-control" id="service_location">
+                        </div>
+                        
+                        <!-- Leadership specific fields -->
+                        <div class="col-md-6 leadership-field" style="display: none;">
+                            <label for="leadership_type" class="form-label">Leadership Type</label>
+                            <select class="form-select" id="leadership_type">
+                                <option value="">Select Leadership Type</option>
+                                <option value="Tomorrow's Leaders">Tomorrow's Leaders</option>
+                                <option value="Tango">Tango</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Language specific fields -->
+                        <div class="col-md-6 language-field" style="display: none;">
+                            <label for="language_type" class="form-label">Language Type</label>
+                            <select class="form-select" id="language_type">
+                                <option value="">Select Language Type</option>
+                                <option value="English">English</option>
+                                <option value="Chinese">Chinese</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" id="save-course-btn">Save Course</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Show/hide category-specific fields
+    const categorySelect = document.getElementById('category');
+    const carFields = document.querySelectorAll('.car-field');
+    const serviceLearningFields = document.querySelectorAll('.service-learning-field');
+    const leadershipFields = document.querySelectorAll('.leadership-field');
+    const languageFields = document.querySelectorAll('.language-field');
+    
+    function toggleFields() {
+        const category = categorySelect.value;
+        
+        // Hide all fields
+        carFields.forEach(field => field.style.display = 'none');
+        serviceLearningFields.forEach(field => field.style.display = 'none');
+        leadershipFields.forEach(field => field.style.display = 'none');
+        languageFields.forEach(field => field.style.display = 'none');
+        
+        // Show relevant fields
+        if (category === 'CAR') {
+            carFields.forEach(field => field.style.display = 'block');
+        } else if (category === 'Service Learning') {
+            serviceLearningFields.forEach(field => field.style.display = 'block');
+        } else if (category === 'Leadership') {
+            leadershipFields.forEach(field => field.style.display = 'block');
+        } else if (category === 'Language') {
+            languageFields.forEach(field => field.style.display = 'block');
+        }
+    }
+    
+    categorySelect.addEventListener('change', toggleFields);
+    
+    // Handle form submission
+    const saveCourseBtn = document.getElementById('save-course-btn');
+    saveCourseBtn.addEventListener('click', function() {
+        const formData = {
+            code: document.getElementById('code').value,
+            name: document.getElementById('name').value,
+            department: document.getElementById('department').value,
+            category: document.getElementById('category').value,
+            subcategory: document.getElementById('subcategory').value,
+            language_requirement: document.getElementById('language_requirement').value
+        };
+        
+        // Add category-specific fields
+        if (formData.category === 'CAR') {
+            formData.car_category = document.getElementById('car_category').value;
+        } else if (formData.category === 'Service Learning') {
+            formData.service_location = document.getElementById('service_location').value;
+        } else if (formData.category === 'Leadership') {
+            formData.leadership_type = document.getElementById('leadership_type').value;
+        } else if (formData.category === 'Language') {
+            formData.language_type = document.getElementById('language_type').value;
+        }
+        
+        fetch('/add_course', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Course added successfully!');
+                // Close the modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('addCourseModal'));
+                modal.hide();
+                // Reset the form
+                document.getElementById('add-course-form').reset();
+                // Redirect to the review page for the new course
+                window.location.href = '/submit_review/' + data.course_id;
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while adding the course.');
+        });
+    });
+});
+</script>
+{% endblock %}

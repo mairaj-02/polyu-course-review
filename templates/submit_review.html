@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row animate-on-scroll">
+    <div class="col-lg-8 mx-auto">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h2 class="mb-0">Submit Review for {{ course.code }}: {{ course.name }}</h2>
+            </div>
+            <div class="card-body">
+                <form method="post" action="" class="needs-validation" novalidate>
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.grade.label(class="form-label") }}
+                                {{ form.grade(class="form-select") }}
+                                {% if form.grade.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.grade.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.rating.label(class="form-label") }}
+                                {{ form.rating(class="form-control", min="1", max="5") }}
+                                {% if form.rating.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.rating.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        {{ form.content.label(class="form-label") }}
+                        {{ form.content(class="form-control", rows="3") }}
+                        {% if form.content.errors %}
+                        <div class="text-danger">
+                            {% for error in form.content.errors %}
+                            <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        <div class="form-text">Provide a brief description of the course content.</div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        {{ form.study_load.label(class="form-label") }}
+                        {{ form.study_load(class="form-control", rows="2") }}
+                        {% if form.study_load.errors %}
+                        <div class="text-danger">
+                            {% for error in form.study_load.errors %}
+                            <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        <div class="form-text">Describe the workload, assignments, exams, etc.</div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        {{ form.teacher_review.label(class="form-label") }}
+                        {{ form.teacher_review(class="form-control", rows="2") }}
+                        {% if form.teacher_review.errors %}
+                        <div class="text-danger">
+                            {% for error in form.teacher_review.errors %}
+                            <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        <div class="form-text">How was the teacher's teaching style, fairness, etc.?</div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        {{ form.alternative_teacher.label(class="form-label") }}
+                        {{ form.alternative_teacher(class="form-control", rows="2") }}
+                        {% if form.alternative_teacher.errors %}
+                        <div class="text-danger">
+                            {% for error in form.alternative_teacher.errors %}
+                            <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        <div class="form-text">Are there other teachers for this course who are better? (Optional)</div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        {{ form.improvement_suggestions.label(class="form-label") }}
+                        {{ form.improvement_suggestions(class="form-control", rows="2") }}
+                        {% if form.improvement_suggestions.errors %}
+                        <div class="text-danger">
+                            {% for error in form.improvement_suggestions.errors %}
+                            <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        <div class="form-text">What could you have done differently to get a better grade? (Optional)</div>
+                    </div>
+                    
+                    {% if course.category == 'Service Learning' %}
+                    <div class="card bg-light mb-4">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0">Service Learning Specific Information</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                {{ form.weather.label(class="form-label") }}
+                                {{ form.weather(class="form-control", rows="2") }}
+                                {% if form.weather.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.weather.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                                <div class="form-text">How were the weather conditions at the service location? (Optional)</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                {{ form.living_conditions.label(class="form-label") }}
+                                {{ form.living_conditions(class="form-control", rows="2") }}
+                                {% if form.living_conditions.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.living_conditions.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                                <div class="form-text">Describe the living conditions, food, and utilities. (Optional)</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                {{ form.service_experience.label(class="form-label") }}
+                                {{ form.service_experience(class="form-control", rows="2") }}
+                                {% if form.service_experience.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.service_experience.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                                <div class="form-text">How was the actual service experience? (Optional)</div>
+                            </div>
+                        </div>
+                    </div>
+                    {% elif course.category in ['Leadership', 'Language'] %}
+                    <div class="card bg-light mb-4">
+                        <div class="card-header bg-warning text-dark">
+                            <h5 class="mb-0">{{ course.category }} Specific Information</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                {{ form.better_grade_teachers.label(class="form-label") }}
+                                {{ form.better_grade_teachers(class="form-control", rows="2") }}
+                                {% if form.better_grade_teachers.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.better_grade_teachers.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                                <div class="form-text">Are there other teachers who give better grades? (Optional)</div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{{ url_for('course_detail', id=course.id) }}" class="btn btn-outline-primary">
+                            <i class="bi bi-arrow-left me-2"></i> Cancel
+                        </a>
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

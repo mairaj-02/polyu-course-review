@@ -1,0 +1,258 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4 animate-on-scroll">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="mb-0">{{ course.code }}: {{ course.name }}</h2>
+                    <p class="mb-0 text-white-50">{{ course.department }}</p>
+                </div>
+                <span class="badge bg-light text-dark">{{ course.category }}</span>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        {% if course.category == 'CAR' %}
+                        <div class="mb-3">
+                            <h6>CAR Category</h6>
+                            <span class="badge bg-primary">{{ course.car_category }}</span>
+                            {% if course.language_requirement %}
+                            <span class="badge bg-success ms-2">{{ course.language_requirement }}</span>
+                            {% endif %}
+                        </div>
+                        {% elif course.category == 'Service Learning' %}
+                        <div class="mb-3">
+                            <h6>Service Location</h6>
+                            <span class="badge bg-info">
+                                <i class="bi bi-geo-alt me-1"></i> {{ course.service_location or 'Various' }}
+                            </span>
+                        </div>
+                        {% elif course.category == 'Leadership' %}
+                        <div class="mb-3">
+                            <h6>Leadership Type</h6>
+                            <span class="badge bg-warning text-dark">{{ course.leadership_type }}</span>
+                        </div>
+                        {% elif course.category == 'Language' %}
+                        <div class="mb-3">
+                            <h6>Language Type</h6>
+                            <span class="badge bg-secondary">{{ course.language_type }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <h6>Course Information</h6>
+                            <p class="mb-1"><i class="bi bi-chat-dots me-2"></i> {{ reviews|length }} Reviews</p>
+                            {% if reviews %}
+                            <p class="mb-1"><i class="bi bi-star me-2"></i> Average Rating: {{ "%.1f"|format(reviews|sum(attribute='rating') / reviews|length) }}/5</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                {% if reviews %}
+                <div class="mb-4">
+                    <h4>Grade Distribution</h4>
+                    <div class="progress mb-2" style="height: 25px;">
+                        {% set total = reviews|length %}
+                        {% for grade, count in grade_counts.items() %}
+                            {% if count > 0 %}
+                            <div class="progress-bar bg-{{ 'success' if grade.startswith('A') else 'warning' if grade.startswith('B') else 'danger' }}" 
+                                 style="width: {{ (count / total * 100)|round|int }}%;" 
+                                 title="{{ grade }}: {{ count }} ({{ (count / total * 100)|round|int }}%)">
+                                {{ grade }}
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <h4>Rating Distribution</h4>
+                    <div class="progress" style="height: 25px;">
+                        {% for i in range(5, 0, -1) %}
+                            {% set rating_str = i|string %}
+                            {% set percentage = (rating_counts[rating_str] / reviews|length * 100)|round|int %}
+                            <div class="progress-bar bg-{{ 'success' if i >= 4 else 'warning' if i >= 3 else 'danger' }}" 
+                                 style="width: {{ percentage }}%;" 
+                                 title="{{ i }} stars: {{ rating_counts[rating_str] }} ({{ percentage }}%)">
+                                {{ i }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                
+                <div class="d-flex justify-content-between">
+                    <a href="{{ url_for('courses') }}" class="btn btn-outline-primary">
+                        <i class="bi bi-arrow-left me-2"></i> Back to Courses
+                    </a>
+                    {% if current_user.is_authenticated %}
+                    <a href="{{ url_for('submit_review', course_id=course.id) }}" class="btn btn-primary">
+                        <i class="bi bi-pencil-square me-2"></i> Submit Review
+                    </a>
+                    {% else %}
+                    <a href="{{ url_for('login', next=request.path) }}" class="btn btn-primary">
+                        <i class="bi bi-box-arrow-in-right me-2"></i> Login to Review
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">Course Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <h6>Category</h6>
+                    <p>{{ course.category }}</p>
+                </div>
+                
+                {% if course.category == 'CAR' %}
+                <div class="mb-3">
+                    <h6>CAR Category</h6>
+                    <p>{{ course.car_category }}</p>
+                </div>
+                <div class="mb-3">
+                    <h6>Language Requirement</h6>
+                    <p>{{ course.language_requirement or 'None' }}</p>
+                </div>
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i> This course fulfills the {{ course.language_requirement }} requirement.
+                </div>
+                {% elif course.category == 'Service Learning' %}
+                <div class="mb-3">
+                    <h6>Service Location</h6>
+                    <p>{{ course.service_location or 'Various' }}</p>
+                </div>
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i> This course combines theoretical learning with community service.
+                </div>
+                {% elif course.category == 'Leadership' %}
+                <div class="mb-3">
+                    <h6>Leadership Type</h6>
+                    <p>{{ course.leadership_type }}</p>
+                </div>
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i> Students must choose one of two leadership courses.
+                </div>
+                {% elif course.category == 'Language' %}
+                <div class="mb-3">
+                    <h6>Language Type</h6>
+                    <p>{{ course.language_type }}</p>
+                </div>
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i> Students must take two courses in each language category.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if reviews %}
+<div class="animate-on-scroll">
+    <h3 class="mb-4">Student Reviews ({{ reviews|length }})</h3>
+    <div class="row">
+        {% for review in reviews %}
+        <div class="col-12 mb-4">
+            <div class="card review-card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="d-flex align-items-center">
+                            <img src="https://randomuser.me/api/portraits/{{ 'women' if loop.index % 2 == 0 else 'men' }}/{{ loop.index * 10 }}.jpg" alt="User" class="rounded-circle me-3" width="40">
+                            <div>
+                                <h6 class="mb-0">{{ review.author.username }}</h6>
+                                <small class="text-muted">{{ review.timestamp.strftime('%Y-%m-%d') }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <span class="badge bg-primary me-2">{{ review.grade }}</span>
+                        <div class="star-rating">
+                            {% for i in range(1, 6) %}
+                            {% if i <= review.rating %}
+                            <i class="bi bi-star-fill"></i>
+                            {% else %}
+                            <i class="bi bi-star"></i>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Course Description</h5>
+                            <p>{{ review.content }}</p>
+                            
+                            <h5>Study Load</h5>
+                            <p>{{ review.study_load }}</p>
+                            
+                            <h5>Teacher Review</h5>
+                            <p>{{ review.teacher_review }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            {% if review.alternative_teacher %}
+                            <h5>Alternative Teacher Recommendations</h5>
+                            <p>{{ review.alternative_teacher }}</p>
+                            {% endif %}
+                            
+                            {% if review.improvement_suggestions %}
+                            <h5>Improvement Suggestions</h5>
+                            <p>{{ review.improvement_suggestions }}</p>
+                            {% endif %}
+                            
+                            {% if course.category == 'Service Learning' %}
+                            {% if review.weather %}
+                            <h5>Weather Conditions</h5>
+                            <p>{{ review.weather }}</p>
+                            {% endif %}
+                            
+                            {% if review.living_conditions %}
+                            <h5>Living Conditions and Food</h5>
+                            <p>{{ review.living_conditions }}</p>
+                            {% endif %}
+                            
+                            {% if review.service_experience %}
+                            <h5>Service Experience</h5>
+                            <p>{{ review.service_experience }}</p>
+                            {% endif %}
+                            {% elif course.category in ['Leadership', 'Language'] %}
+                            {% if review.better_grade_teachers %}
+                            <h5>Teachers Who Give Better Grades</h5>
+                            <p>{{ review.better_grade_teachers }}</p>
+                            {% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% else %}
+<div class="text-center py-5 animate-on-scroll">
+    <div class="icon-circle bg-light text-primary mb-4 mx-auto">
+        <i class="bi bi-chat-square-text fs-1"></i>
+    </div>
+    <h3>No reviews yet</h3>
+    <p class="text-muted mb-4">Be the first to review this course!</p>
+    {% if current_user.is_authenticated %}
+    <a href="{{ url_for('submit_review', course_id=course.id) }}" class="btn btn-primary">
+        <i class="bi bi-pencil-square me-2"></i> Submit Review
+    </a>
+    {% else %}
+    <a href="{{ url_for('login', next=request.path) }}" class="btn btn-primary">
+        <i class="bi bi-box-arrow-in-right me-2"></i> Login to Submit Review
+    </a>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero animate-fadeIn">
+    <div class="row align-items-center">
+        <div class="col-lg-6">
+            <h1 class="display-5">Discover the Best GUR Courses at PolyU</h1>
+            <p class="fs-4 mb-4">Make informed decisions with real student reviews, ratings, and insights.</p>
+            <div class="d-flex flex-wrap gap-3">
+                {% if current_user.is_authenticated %}
+                <a href="{{ url_for('courses') }}" class="btn btn-primary btn-lg">
+                    <i class="bi bi-search me-2"></i> Browse Courses
+                </a>
+                <a href="{{ url_for('select_course_for_review') }}" class="btn btn-success btn-lg">
+                    <i class="bi bi-pencil-square me-2"></i> Submit a Review
+                </a>
+                {% else %}
+                <a href="{{ url_for('courses') }}" class="btn btn-primary btn-lg">
+                    <i class="bi bi-search me-2"></i> Browse Courses
+                </a>
+                <a href="{{ url_for('register') }}" class="btn btn-success btn-lg">
+                    <i class="bi bi-person-plus me-2"></i> Register to Review
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        <div class="col-lg-6 text-center">
+            <img src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Students studying" class="img-fluid rounded-4 shadow-lg animate-float">
+        </div>
+    </div>
+</div>
+
+<!-- Search Section -->
+<div class="row mb-5 animate-on-scroll">
+    <div class="col-12">
+        <div class="card search-filter-card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-search me-2"></i> Find Your Perfect Course</h5>
+            </div>
+            <div class="card-body">
+                <form action="{{ url_for('search') }}" method="get">
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <div class="input-group">
+                                <input type="text" class="form-control form-control-lg" name="query" placeholder="Search by course name or code..." required>
+                                <button class="btn btn-primary btn-lg" type="submit">Search</button>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="{{ url_for('courses') }}" class="btn btn-outline-primary btn-lg w-100">
+                                <i class="bi bi-funnel me-2"></i> Advanced Filters
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Section -->
+<div class="row mb-5 animate-on-scroll">
+    <div class="col-md-4 mb-4">
+        <div class="stats-card">
+            <div class="stats-number">{{ courses.total }}</div>
+            <p class="mb-0">Courses Available</p>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="stats-card">
+            <div class="stats-number">{{ reviews_count }}</div>
+            <p class="mb-0">Student Reviews</p>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="stats-card">
+            <div class="stats-number">{{ users_count }}</div>
+            <p class="mb-0">Active Students</p>
+        </div>
+    </div>
+</div>
+
+<!-- Categories Section -->
+<div class="row mb-5 animate-on-scroll">
+    <div class="col-12">
+        <h2 class="text-center mb-5">Course Categories</h2>
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-3">
+                <div class="card category-card h-100">
+                    <div class="card-body text-center">
+                        <div class="icon-circle bg-primary bg-opacity-10 text-primary mb-3 mx-auto">
+                            <i class="bi bi-people-fill fs-1"></i>
+                        </div>
+                        <h5>Cluster Area Requirement</h5>
+                        <p class="text-muted">One course from each of four categories: A, M, N, D</p>
+                        <a href="{{ url_for('courses', category='CAR') }}" class="btn btn-sm btn-outline-primary">Explore</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="card category-card h-100">
+                    <div class="card-body text-center">
+                        <div class="icon-circle bg-success bg-opacity-10 text-success mb-3 mx-auto">
+                            <i class="bi bi-heart-fill fs-1"></i>
+                        </div>
+                        <h5>Service Learning</h5>
+                        <p class="text-muted">Combine theory with community service experience</p>
+                        <a href="{{ url_for('courses', category='Service Learning') }}" class="btn btn-sm btn-outline-success">Explore</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="card category-card h-100">
+                    <div class="card-body text-center">
+                        <div class="icon-circle bg-warning bg-opacity-10 text-warning mb-3 mx-auto">
+                            <i class="bi bi-star-fill fs-1"></i>
+                        </div>
+                        <h5>Leadership</h5>
+                        <p class="text-muted">Choose between Tomorrow's Leaders or Tango</p>
+                        <a href="{{ url_for('courses', category='Leadership') }}" class="btn btn-sm btn-outline-warning">Explore</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="card category-card h-100">
+                    <div class="card-body text-center">
+                        <div class="icon-circle bg-info bg-opacity-10 text-info mb-3 mx-auto">
+                            <i class="bi bi-translate fs-1"></i>
+                        </div>
+                        <h5>Language & Communication</h5>
+                        <p class="text-muted">Two courses each in English and Chinese</p>
+                        <a href="{{ url_for('courses', category='Language') }}" class="btn btn-sm btn-outline-info">Explore</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Features Section -->
+<div class="row mb-5 animate-on-scroll">
+    <div class="col-12">
+        <h2 class="text-center mb-5">Why Choose Our Platform?</h2>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card border-0 bg-light h-100">
+                    <div class="card-body text-center">
+                        <div class="icon-circle bg-primary bg-opacity-10 text-primary mb-3 mx-auto">
+                            <i class="bi bi-star-fill fs-1"></i>
+                        </div>
+                        <h5>Real Student Reviews</h5>
+                        <p class="text-muted">Get authentic insights from students who have actually taken the courses.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 bg-light h-100">
+                    <div class="card-body text-center">
+                        <div class="icon-circle bg-success bg-opacity-10 text-success mb-3 mx-auto">
+                            <i class="bi bi-graph-up fs-1"></i>
+                        </div>
+                        <h5>Grade Analytics</h5>
+                        <p class="text-muted">See grade distributions and statistics to make informed decisions.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 bg-light h-100">
+                    <div class="card-body text-center">
+                        <div class="icon-circle bg-warning bg-opacity-10 text-warning mb-3 mx-auto">
+                            <i class="bi bi-person-check fs-1"></i>
+                        </div>
+                        <h5>Teacher Ratings</h5>
+                        <p class="text-muted">Find out which teachers give better grades and are more engaging.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- CTA Section -->
+<div class="row mb-5 animate-on-scroll">
+    <div class="col-12">
+        <div class="card border-0 cta-gold">
+            <div class="card-body text-center p-5">
+                <h2 class="mb-3">Ready to Find Your Perfect Courses?</h2>
+                <p class="lead mb-4">Join thousands of PolyU students making smarter course decisions.</p>
+                {% if current_user.is_authenticated %}
+                <a href="{{ url_for('courses') }}" class="btn btn-light btn-lg">
+                    <i class="bi bi-search me-2"></i> Browse Courses Now
+                </a>
+                {% else %}
+                <a href="{{ url_for('register') }}" class="btn btn-light btn-lg">
+                    <i class="bi bi-person-plus me-2"></i> Sign Up Today
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Floating Action Button -->
+{% if current_user.is_authenticated %}
+<a href="{{ url_for('select_course_for_review') }}" class="fab">
+    <i class="bi bi-pencil-square"></i>
+</a>
+{% endif %}
+{% endblock %}
